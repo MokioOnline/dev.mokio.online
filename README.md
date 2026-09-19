@@ -13,9 +13,9 @@ Everyone else is blocked.
 Upload the website you are building into this GitHub folder:
 
 current/
-  index.html
+  dev.html
   styles.css
   script.js
   ...any other files
 
-When an allowed user signs in, they are taken straight into current/index.html.
+When an allowed user signs in, they are taken straight into current/dev.html.
