@@ -3,7 +3,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_u09NHV7z9E-2CJ0tvQ8IvQ_xcSXfs0F';
 const PROJECT_PATH = 'current/dev.html';
 const ALLOWED_ROLES = ['tester', 'mod', 'dev', 'owner'];
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const gate = document.getElementById('gate');
 const shell = document.getElementById('shell');
@@ -38,7 +38,7 @@ async function withTimeout(promise, ms, label) {
 }
 
 async function loadRole() {
-  const rpc = supabase.rpc('get_my_profile');
+  const rpc = db.rpc('get_my_profile');
   const { data, error } = await withTimeout(rpc, 6000, 'Role check');
   if (error) throw new Error(error.message);
   const row = Array.isArray(data) ? data[0] : data;
@@ -61,7 +61,7 @@ async function enter() {
       showGate('Your role is ' + profile.role + '. Only tester or better can open this site.');
       return;
     }
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await db.auth.getUser();
     showProject(profile.email || userData.user?.email || '', profile.role);
   } catch (err) {
     showGate(err.message || 'Could not check your role. Run the get_my_profile SQL in Supabase.');
@@ -78,7 +78,7 @@ document.getElementById('loginBtn').onclick = async () => {
   note.textContent = 'Signing in...';
   try {
     const { data, error } = await withTimeout(
-      supabase.auth.signInWithPassword({ email, password }),
+      db.auth.signInWithPassword({ email, password }),
       10000,
       'Sign in'
     );
@@ -98,12 +98,12 @@ document.getElementById('loginBtn').onclick = async () => {
 };
 
 document.getElementById('signOutBtn').onclick = async () => {
-  await supabase.auth.signOut();
+  await db.auth.signOut();
   localStorage.removeItem('mokio_session');
   showGate('');
 };
 
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   if (session) enter();
 })();
