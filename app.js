@@ -1,10 +1,6 @@
 const SUPABASE_URL = 'https://gmncuelonmicdbpuacqi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_u09NHV7z9E-2CJ0tvQ8IvQ_xcSXfs0F';
-
-// Upload your in-progress website files to this folder in the GitHub repo:
-// current/index.html  (+ css, js, images, etc.)
 const PROJECT_PATH = 'current/index.html';
-
 const ALLOWED_ROLES = ['tester', 'mod', 'dev', 'owner'];
 
 const headers = (token = SUPABASE_ANON_KEY) => ({
@@ -35,41 +31,73 @@ function getSession() {
   }
 }
 
+async function request(url, options = {}, ms = 8000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { ...options, signal: ctrl.signal });
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchRole(session) {
-  let user = session.user;
-  if (!user?.id || !user?.email) {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: headers(session.access_token)
-    });
-    if (!res.ok) return null;
-    user = await res.json();
+  const token = session.access_token;
+  let email = (session.user && session.user.email || '').toLowerCase();
+  let userId = session.user && session.user.id;
+
+  if (!userId || !email) {
+    const userRes = await request(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(token) });
+    if (userRes.ok && userRes.data) {
+      userId = userRes.data.id;
+      email = (userRes.data.email || email).toLowerCase();
+    }
   }
 
-  const email = (user.email || '').toLowerCase();
-  let rows = [];
+  // Preferred: security-definer function (avoids profiles RLS hanging)
+  const rpc = await request(`${SUPABASE_URL}/rest/v1/rpc/get_my_profile`, {
+    method: 'POST',
+    headers: headers(token),
+    body: '{}'
+  });
+  if (rpc.ok && rpc.data) {
+    const row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
+    if (row && row.role) {
+      return { email: row.email || email, role: String(row.role).toLowerCase().trim() };
+    }
+  }
 
-  if (user.id) {
-    const byId = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=email,role`,
-      { headers: headers(session.access_token) }
+  if (userId) {
+    const byId = await request(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=email,role`,
+      { headers: headers(token) }
     );
-    if (byId.ok) rows = await byId.json();
+    if (byId.ok && Array.isArray(byId.data) && byId.data[0]?.role) {
+      return {
+        email: byId.data[0].email || email,
+        role: String(byId.data[0].role).toLowerCase().trim()
+      };
+    }
   }
 
-  if (!Array.isArray(rows) || !rows[0]) {
-    const byEmail = await fetch(
+  if (email) {
+    const byEmail = await request(
       `${SUPABASE_URL}/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=email,role`,
-      { headers: headers(session.access_token) }
+      { headers: headers(token) }
     );
-    if (byEmail.ok) rows = await byEmail.json();
+    if (byEmail.ok && Array.isArray(byEmail.data) && byEmail.data[0]?.role) {
+      return {
+        email: byEmail.data[0].email || email,
+        role: String(byEmail.data[0].role).toLowerCase().trim()
+      };
+    }
   }
 
-  const profile = Array.isArray(rows) ? rows[0] : null;
-  if (!profile?.role) return { email, role: null };
-  return {
-    email: profile.email || email,
-    role: String(profile.role).toLowerCase().trim()
-  };
+  return { email, role: null, error: rpc.status || 'no-profile' };
 }
 
 function showProject(profile) {
@@ -83,43 +111,50 @@ function showGate(message) {
   gate.hidden = false;
   shell.hidden = true;
   frame.removeAttribute('src');
-  if (message) note.textContent = message;
+  note.textContent = message || '';
 }
 
 async function enter(session) {
   note.textContent = 'Checking role...';
-  const profile = await fetchRole(session);
-  if (!profile?.role) {
-    showGate('Signed in, but no role was found in the database.');
-    return;
+  try {
+    const profile = await fetchRole(session);
+    if (!profile?.role) {
+      showGate('Could not read your role from the database. Run the get_my_profile SQL in Supabase, then try again.');
+      return;
+    }
+    if (!ALLOWED_ROLES.includes(profile.role)) {
+      showGate('Your role is ' + profile.role + '. Only tester or better can open this site.');
+      return;
+    }
+    showProject(profile);
+  } catch (err) {
+    showGate('Role check failed: ' + (err.message || 'network error'));
   }
-  if (!ALLOWED_ROLES.includes(profile.role)) {
-    showGate('Your role is ' + profile.role + '. Only tester or better can open this site.');
-    return;
-  }
-  showProject(profile);
 }
 
 document.getElementById('loginBtn').onclick = async () => {
   const email = document.getElementById('email').value.trim().toLowerCase();
   const password = document.getElementById('password').value;
   note.textContent = 'Signing in...';
-
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify({ email, password })
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    note.textContent = data.error_description || data.error || 'Sign in failed';
-    return;
+  try {
+    const res = await request(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const data = res.data || {};
+      note.textContent = data.error_description || data.error || data.msg || ('Sign in failed (' + res.status + ')');
+      return;
+    }
+    saveSession(res.data);
+    await enter({
+      access_token: res.data.access_token,
+      user: res.data.user
+    });
+  } catch (err) {
+    note.textContent = 'Sign in failed: ' + (err.message || 'network error');
   }
-  saveSession(data);
-  enter({
-    access_token: data.access_token,
-    user: data.user
-  });
 };
 
 document.getElementById('signOutBtn').onclick = () => {
