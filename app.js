@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://gmncuelonmicdbpuacqi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_u09NHV7z9E-2CJ0tvQ8IvQ_xcSXfs0F';
 
 const GITHUB_OWNER = 'mokioonline';
-const GITHUB_REPO = 'mokio-dev';
+const GITHUB_REPO = 'dev.mokio.online';
 const PREVIEW_DIR = 'previews';
 
 const headers = (token) => ({
@@ -30,6 +30,29 @@ function canSeeDevTools(role) {
   return ['owner', 'dev'].includes(role);
 }
 
+async function signInHere() {
+  const note = document.getElementById('loginNote');
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  note.textContent = 'Signing in...';
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    note.textContent = data.error_description || data.msg || data.error || 'Sign in failed';
+    return;
+  }
+  localStorage.setItem('mokio_session', JSON.stringify({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    user: data.user
+  }));
+  location.reload();
+}
+
 async function boot() {
   try {
     session = JSON.parse(localStorage.getItem('mokio_session') || 'null');
@@ -40,7 +63,20 @@ async function boot() {
 
   if (!session?.access_token) {
     who.textContent = 'Not signed in';
-    app.innerHTML = `<div class="card"><h3>Sign in required</h3><p class="muted">Open <a href="https://mokio.online">mokio.online</a>, sign in, then come back here.</p></div>`;
+    app.innerHTML = `
+      <div class="card" style="max-width:420px">
+        <h3>Sign in</h3>
+        <p class="muted">Use the same Mokio account. Testers, devs, and owners can enter.</p>
+        <label>Email</label>
+        <input id="loginEmail" type="email" placeholder="you@email.com">
+        <label>Password</label>
+        <input id="loginPassword" type="password" placeholder="Password">
+        <div class="row">
+          <button class="btn primary" id="loginBtn">Sign In</button>
+        </div>
+        <p class="muted" id="loginNote"></p>
+      </div>`;
+    document.getElementById('loginBtn').onclick = signInHere;
     return;
   }
 
