@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner — Mokio</title>
+  <link rel="icon" href="../images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="../index.html" class="logo">
+        <img src="../images/logo.svg" alt="Mokio" class="logo-img">
+        <span class="logo-text">Mokio</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../index.html#staff" class="dev-tab">Dev</a>
+        <a href="../index.html" class="account-btn"><span class="account-btn-icon">M</span><span>Account</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="staff">
+    <div class="container">
+      <div class="section-header">
+        <h2>Owner area</h2>
+        <p>Accounts on the site. You only see email and role — never passwords or security keys.</p>
+      </div>
+      <div class="staff-card">
+        <div class="role-badge owner">Accounts</div>
+        <h3>All accounts</h3>
+        <p class="form-note" id="accountsNote">Loading accounts...</p>
+        <div class="accounts-wrap">
+          <table class="accounts-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody id="accountsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../script.js"></script>
+  <script>
+    // This page is locked to owner only
+    window.MOKIO_REQUIRED_ROLES = ['owner'];
+  </script>
+</body>
+</html>

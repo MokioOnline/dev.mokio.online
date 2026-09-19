@@ -1,18 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome preview</title>
-  <style>
-    body { font-family: system-ui; background:#0b0b12; color:#fff; display:grid; place-items:center; min-height:100vh; }
-    h1 { background: linear-gradient(135deg,#55e7ff,#d476ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  </style>
+  <title>Mokio Messages</title>
+  <link rel="icon" href="../images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="messages.css">
 </head>
 <body>
-  <div>
-    <h1>Mokio preview</h1>
-    <p>Testers see pages like this as a real site.</p>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="../index.html">
+        <img src="../images/logo.svg" alt="">
+        <div>
+          <strong>Mokio</strong>
+          <span>Messages</span>
+        </div>
+      </a>
+      <form id="startChat" class="start-chat">
+        <input name="email" type="email" placeholder="Start chat by email" required>
+        <button type="submit">Chat</button>
+      </form>
+      <div class="convos" id="convos"></div>
+      <div class="me" id="me">Not signed in</div>
+    </aside>
+
+    <section class="chat">
+      <header class="chat-top" id="chatTop">Select a conversation</header>
+      <div class="thread" id="thread"></div>
+      <form class="composer" id="composer" hidden>
+        <input name="body" placeholder="Write a message..." autocomplete="off" required>
+        <button type="submit">Send</button>
+      </form>
+      <div class="gate" id="gate">
+        <h2>Sign in to message</h2>
+        <input id="loginEmail" type="email" placeholder="Email">
+        <input id="loginPassword" type="password" placeholder="Password">
+        <button type="button" id="loginBtn">Sign In</button>
+        <p id="loginNote"></p>
+      </div>
+    </section>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="messages.js"></script>
 </body>
 </html>
