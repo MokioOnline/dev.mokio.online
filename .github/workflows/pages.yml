@@ -26,10 +26,10 @@ jobs:
       - run: npm install
       - run: npm run build
         env:
-          VITE_USER_SUPABASE_URL: ${{ secrets.VITE_USER_SUPABASE_URL }}
-          VITE_USER_SUPABASE_ANON_KEY: ${{ secrets.VITE_USER_SUPABASE_ANON_KEY }}
-          VITE_MOKIO_SUPABASE_URL: ${{ secrets.VITE_MOKIO_SUPABASE_URL }}
-          VITE_MOKIO_SUPABASE_ANON_KEY: ${{ secrets.VITE_MOKIO_SUPABASE_ANON_KEY }}
+          VITE_USER_SUPABASE_URL: ${{ secrets.https://gmncuelonmicdbpuacqi.supabase.co }}
+          VITE_USER_SUPABASE_ANON_KEY: ${{ secrets.sb_publishable_u09NHV7z9E-2CJ0tvQ8IvQ_xcSXfs0F }}
+          VITE_MOKIO_SUPABASE_URL: ${{ secrets.https://kxqherkdmnqfscbzsoxq.supabase.co }}
+          VITE_MOKIO_SUPABASE_ANON_KEY: ${{ secrets.sb_publishable_Kh8F9sYevLtVDVmRtCQFWg_dst_0oD9 }}
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
