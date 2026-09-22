@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mokio Messages</title>
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="messages-body">
+  <header class="nav">
+    <a class="brand" href="index.html">
+      <img src="images/logo.svg" alt="Mokio">
+      <span>Mokio</span>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="music.html">Music</a>
+      <a href="messages.html" class="active">Messages</a>
+    </nav>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <form id="startChat" class="row">
+        <input name="email" type="email" placeholder="Chat by email" required>
+        <button type="submit">Chat</button>
+      </form>
+      <div id="convos" class="convos"></div>
+      <div id="me" class="me">Not signed in</div>
+    </aside>
+    <section class="chat">
+      <header id="chatTop">Select a conversation</header>
+      <div id="thread" class="thread"></div>
+      <form id="composer" class="row" hidden>
+        <input name="body" placeholder="Write a message..." required>
+        <button type="submit">Send</button>
+      </form>
+      <div id="gate" class="gate">
+        <h2>Sign in</h2>
+        <input id="loginEmail" type="email" placeholder="Email">
+        <input id="loginPassword" type="password" placeholder="Password">
+        <button type="button" id="loginBtn">Sign In</button>
+        <p id="loginNote"></p>
+      </div>
+    </section>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/messages.js"></script>
+</body>
+</html>
