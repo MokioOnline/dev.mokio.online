@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mokio Messages</title>
+  <link rel="icon" href="../images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <aside>
+      <div class="brand">
+        <img src="../images/logo.svg" alt="">
+        <div>
+          <strong>Messages</strong>
+          <div id="me" class="muted"></div>
+        </div>
+      </div>
+      <form id="startChat">
+        <input name="handle" placeholder="Chat with @username or email" required>
+        <button type="submit">Chat</button>
+      </form>
+      <div id="convos"></div>
+      <button type="button" id="signOutBtn" class="text">Sign out</button>
+    </aside>
+    <main>
+      <header id="chatTop">Pick a conversation</header>
+      <div id="thread"></div>
+      <form id="composer" hidden>
+        <input name="body" placeholder="Write a message..." required>
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
