@@ -1,0 +1,110 @@
+:root {
+  --bg: #09090f;
+  --panel: #12121a;
+  --card: #16161f;
+  --text: #f3f4f8;
+  --muted: #8b91a7;
+  --line: rgba(255,255,255,.1);
+  --accent: linear-gradient(135deg, #55e7ff, #7d8cff);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(125,140,255,.16), transparent 36%),
+    var(--bg);
+  color: var(--text);
+}
+#app {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+aside {
+  border-right: 1px solid var(--line);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--panel);
+}
+.brand { display: flex; gap: 10px; align-items: center; }
+.brand img { width: 36px; height: 36px; border-radius: 12px; }
+.brand strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px;
+}
+.muted { color: var(--muted); font-size: 13px; }
+.card-form { display: flex; gap: 8px; }
+input {
+  flex: 1;
+  background: #0c0c14;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+}
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 16px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+#convos { flex: 1; overflow: auto; }
+.convo {
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.convo:hover, .convo.active {
+  background: var(--card);
+  border-color: var(--line);
+}
+.text {
+  background: transparent;
+  color: var(--muted);
+  align-self: flex-start;
+  padding: 0;
+}
+main { display: flex; flex-direction: column; min-width: 0; }
+#chatTop {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px;
+}
+#thread {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #1b1b26;
+  border: 1px solid var(--line);
+}
+.bubble.mine {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+}
+#composer {
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--line);
+  background: rgba(18,18,26,.85);
+}
+@media (max-width: 800px) {
+  #app { grid-template-columns: 1fr; }
+}
