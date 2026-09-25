@@ -39,26 +39,135 @@ async function boot() {
   const row = Array.isArray(res.data) ? res.data[0] : res.data;
   const role = String(row?.role || session.profile?.role || '').toLowerCase();
   if (!ALLOWED_ROLES.includes(role)) { kick(); return; }
+  const extra = await request(SUPABASE_URL + '/rest/v1/profiles?id=eq.' + session.user.id + '&select=display_name,bio,pronouns,color,banner_color,status,hide_online', { headers: headers(session.access_token) });
+  const extraRow = Array.isArray(extra.data) ? extra.data[0] : extra.data || {};
   me = {
     id: session.user.id,
     email: (row?.email || session.user.email || '').toLowerCase(),
     username: row?.username || session.profile?.username || '',
-    role
+    role,
+    displayName: extraRow?.display_name || row?.username || '',
+    bio: extraRow?.bio || '',
+    pronouns: extraRow?.pronouns || '',
+    color: extraRow?.color || '#4fc3f7',
+    bannerColor: extraRow?.banner_color || '#12141c',
+    status: extraRow?.status || 'online',
+    hideOnline: !!extraRow?.hide_online
   };
-  const label = me.username || me.email;
-  $('meName').textContent = label;
-  $('meSub').textContent = me.role;
-  $('meAv').textContent = initial(label);
+  paintMe();
   await loadFriends();
   await loadConvos();
+  loadServers();
+}
+
+function paintMe() {
+  const label = me.displayName || me.username || me.email;
+  $('meName').textContent = label;
+  $('meSub').textContent = me.status + ' · ' + me.role;
+  $('meAv').textContent = initial(label);
+  $('meAv').style.background = me.color;
+  $('displayName').value = me.displayName || '';
+  $('bio').value = me.bio || '';
+  $('pronouns').value = me.pronouns || '';
+  $('color').value = me.color || '#4fc3f7';
+  $('bannerColor').value = me.bannerColor || '#12141c';
+  $('status').value = me.status || 'online';
+  $('hideOnline').checked = !!me.hideOnline;
+  $('prevName').textContent = label;
+  $('prevUser').textContent = me.username ? '@' + me.username : me.email;
+  $('prevAv').textContent = initial(label);
+  $('prevAv').style.background = me.color;
+  $('banner').style.background = me.bannerColor;
+}
+
+function showPane(name, title) {
+  ['friendsPane','notesPane','settingsPane','chatPane'].forEach((id) => { $(id).hidden = id !== name; });
+  $('title').textContent = title;
 }
 
 $('homeBtn').onclick = $('friendsBtn').onclick = () => {
   current = null;
-  $('title').textContent = 'Friends';
-  $('friendsPane').hidden = false;
-  $('chatPane').hidden = true;
+  showPane('friendsPane', 'Friends');
 };
+$('notesBtn').onclick = () => showPane('notesPane', 'Notifications');
+$('settingsBtn').onclick = $('meBtn').onclick = () => showPane('settingsPane', 'Settings');
+$('saveProfile').onclick = saveProfile;
+$('color').oninput = $('bannerColor').oninput = $('displayName').oninput = () => {
+  me.displayName = $('displayName').value;
+  me.color = $('color').value;
+  me.bannerColor = $('bannerColor').value;
+  paintMe();
+};
+$('emojiBtn').onclick = () => {
+  const bar = $('emojiBar');
+  if (!bar.dataset.ready) {
+    '😀😂😍🥰😎🤔😭😡👍👎👏🙌🔥✨💯❤️💜💙🎉🙏👀💀✅⭐🌙☀️🌈🐶🐱🍕☕'.split(/(.{1})/u).filter(Boolean).forEach((e) => {
+      if (!e.trim()) return;
+    });
+    ['😀','😂','😍','🥰','😎','🤔','😭','😡','👍','👎','👏','🙌','🔥','✨','💯','❤️','💜','💙','🎉','🙏','👀','💀','✅','⭐'].forEach((e) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = e;
+      b.onclick = () => { const input = $('composer').body; input.value += e; input.focus(); };
+      bar.appendChild(b);
+    });
+    bar.dataset.ready = '1';
+  }
+  bar.hidden = !bar.hidden;
+};
+$('newServerBtn').onclick = () => {
+  const name = prompt('Server name');
+  if (!name) return;
+  const list = JSON.parse(localStorage.getItem('mokio_servers') || '[]');
+  list.push({ id: Date.now().toString(), name });
+  localStorage.setItem('mokio_servers', JSON.stringify(list));
+  loadServers();
+};
+function loadServers() {
+  const list = JSON.parse(localStorage.getItem('mokio_servers') || '[]');
+  const box = $('servers');
+  box.innerHTML = '';
+  list.forEach((sv) => {
+    const b = document.createElement('button');
+    b.className = 'orb';
+    b.title = sv.name;
+    b.textContent = sv.name.slice(0, 1).toUpperCase();
+    b.onclick = () => { $('midTitle').textContent = sv.name; showPane('friendsPane', sv.name); };
+    box.appendChild(b);
+  });
+}
+async function saveProfile() {
+  const payload = {
+    display_name: $('displayName').value.trim(),
+    bio: $('bio').value.trim(),
+    pronouns: $('pronouns').value.trim(),
+    color: $('color').value,
+    banner_color: $('bannerColor').value,
+    status: $('status').value,
+    hide_online: $('hideOnline').checked
+  };
+  $('saveNote').textContent = 'Saving...';
+  const res = await request(SUPABASE_URL + '/rest/v1/profiles?id=eq.' + me.id, {
+    method: 'PATCH',
+    headers: { ...headers(session.access_token), Prefer: 'return=minimal' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    $('saveNote').textContent = (res.data && res.data.message) || 'Run the profile SQL first.';
+    return;
+  }
+  Object.assign(me, {
+    displayName: payload.display_name,
+    bio: payload.bio,
+    pronouns: payload.pronouns,
+    color: payload.color,
+    bannerColor: payload.banner_color,
+    status: payload.status,
+    hideOnline: payload.hide_online
+  });
+  paintMe();
+  $('saveNote').textContent = 'Saved.';
+}
 
 $('addFriend').onsubmit = async (e) => {
   e.preventDefault();

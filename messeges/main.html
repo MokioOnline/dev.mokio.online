@@ -12,12 +12,15 @@
     <aside class="rail">
       <button id="homeBtn" title="Home"><img class="home" src="mokio-logo.png" alt="Mokio"></button>
       <div class="rule"></div>
-      <button class="orb" title="Direct messages">DM</button>
+      <div id="servers"></div>
+      <button class="orb" id="newServerBtn" title="New server">+</button>
     </aside>
+
     <aside class="mid">
-      <div class="mid-top">Direct messages</div>
+      <div class="mid-top" id="midTitle">Direct messages</div>
       <div class="mid-list">
         <button class="mid-item on" id="friendsBtn">Friends</button>
+        <button class="mid-item" id="notesBtn">Notifications</button>
         <div id="convos"></div>
       </div>
       <button class="mebar" id="meBtn">
@@ -28,20 +31,61 @@
         </div>
       </button>
     </aside>
+
     <section class="main">
       <header class="top">
         <span id="title">Friends</span>
+        <button class="ghost" id="settingsBtn">Settings</button>
       </header>
+
       <div id="friendsPane" class="body">
-        <form id="addFriend">
+        <form id="addFriend" class="inline">
           <input class="field" name="handle" placeholder="Add friend by username or email">
+          <button class="send" type="submit">Add</button>
         </form>
         <div class="h">Friends</div>
         <div id="friends"></div>
       </div>
+
+      <div id="notesPane" class="body" hidden>
+        <div class="h">Notifications</div>
+        <div id="notes"></div>
+      </div>
+
+      <div id="settingsPane" class="body" hidden>
+        <div class="h">Profile</div>
+        <div class="preview" id="preview">
+          <div class="banner" id="banner"></div>
+          <div class="preview-row">
+            <div class="avatar lg" id="prevAv">M</div>
+            <div>
+              <div id="prevName">You</div>
+              <div class="sub" id="prevUser">@user</div>
+            </div>
+          </div>
+        </div>
+        <label>Display name<input class="field" id="displayName"></label>
+        <label>Bio<textarea class="field area" id="bio"></textarea></label>
+        <label>Pronouns<input class="field" id="pronouns"></label>
+        <label>Accent color<input class="field" id="color" type="color" value="#4fc3f7"></label>
+        <label>Banner color<input class="field" id="bannerColor" type="color" value="#12141c"></label>
+        <label>Status
+          <select class="field" id="status">
+            <option value="online">online</option>
+            <option value="dnd">do not disturb</option>
+            <option value="invisible">invisible</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="hideOnline"> Hide online status</label>
+        <button class="send" id="saveProfile">Save profile</button>
+        <p class="sub" id="saveNote"></p>
+      </div>
+
       <div id="chatPane" hidden>
         <div id="thread" class="thread"></div>
+        <div id="emojiBar" class="emoji" hidden></div>
         <form id="composer" class="composer">
+          <button type="button" id="emojiBtn" class="ghost">☺</button>
           <input name="body" placeholder="Message" autocomplete="off">
           <button class="send" type="submit">Send</button>
         </form>
