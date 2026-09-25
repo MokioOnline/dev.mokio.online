@@ -3,36 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mokio Messages</title>
-  <link rel="icon" href="../images/logo.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <title>Mokio</title>
+  <link rel="icon" href="icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app">
-    <aside>
-      <div class="brand">
-        <img src="../images/logo.svg" alt="Mokio">
-        <div>
-          <strong>Messages</strong>
-          <div id="me" class="muted"></div>
-        </div>
-      </div>
-      <form id="startChat" class="card-form">
-        <input name="handle" placeholder="@username or email" required>
-        <button type="submit">Chat</button>
-      </form>
-      <div id="convos"></div>
-      <button type="button" id="signOutBtn" class="text">Sign out</button>
+  <div class="app">
+    <aside class="rail">
+      <button id="homeBtn" title="Home"><img class="home" src="mokio-logo.png" alt="Mokio"></button>
+      <div class="rule"></div>
+      <button class="orb" title="Direct messages">DM</button>
     </aside>
-    <main>
-      <header id="chatTop">Pick a conversation</header>
-      <div id="thread"></div>
-      <form id="composer" class="card-form" hidden>
-        <input name="body" placeholder="Write a message..." required>
-        <button type="submit">Send</button>
-      </form>
-    </main>
+    <aside class="mid">
+      <div class="mid-top">Direct messages</div>
+      <div class="mid-list">
+        <button class="mid-item on" id="friendsBtn">Friends</button>
+        <div id="convos"></div>
+      </div>
+      <button class="mebar" id="meBtn">
+        <div class="avatar" id="meAv">M</div>
+        <div>
+          <div class="name" id="meName">—</div>
+          <div class="sub" id="meSub">online</div>
+        </div>
+      </button>
+    </aside>
+    <section class="main">
+      <header class="top">
+        <span id="title">Friends</span>
+      </header>
+      <div id="friendsPane" class="body">
+        <form id="addFriend">
+          <input class="field" name="handle" placeholder="Add friend by username or email">
+        </form>
+        <div class="h">Friends</div>
+        <div id="friends"></div>
+      </div>
+      <div id="chatPane" hidden>
+        <div id="thread" class="thread"></div>
+        <form id="composer" class="composer">
+          <input name="body" placeholder="Message" autocomplete="off">
+          <button class="send" type="submit">Send</button>
+        </form>
+      </div>
+    </section>
   </div>
   <script src="app.js"></script>
 </body>
