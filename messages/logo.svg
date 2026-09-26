@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Mokio circular logo</title>
+  <desc id="desc">A circular Mokio app icon with a connected M monogram.</desc>
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="22%" r="85%">
+      <stop stop-color="#344897"/>
+      <stop offset=".55" stop-color="#1D2860"/>
+      <stop offset="1" stop-color="#0D1129"/>
+    </radialGradient>
+    <linearGradient id="stroke" x1="228" y1="274" x2="780" y2="752" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55E7FF"/>
+      <stop offset=".5" stop-color="#7D8CFF"/>
+      <stop offset="1" stop-color="#D476FF"/>
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="512" cy="512" r="480" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="478" fill="none" stroke="#93A3FF" stroke-opacity=".25" stroke-width="4"/>
+  <circle cx="512" cy="512" r="386" fill="none" stroke="#B8C3FF" stroke-opacity=".08" stroke-width="3"/>
+  <path d="M270 686V335L420 542L512 420L673 686V335" fill="none" stroke="url(#stroke)" stroke-linecap="round" stroke-linejoin="round" stroke-width="58" filter="url(#glow)"/>
+  <circle cx="270" cy="335" r="29" fill="#55E7FF"/>
+  <circle cx="420" cy="542" r="29" fill="#7D8CFF"/>
+  <circle cx="512" cy="420" r="29" fill="#A47BFF"/>
+  <circle cx="673" cy="335" r="29" fill="#D476FF"/>
+  <path d="M486 393l50 29-50 29z" fill="#FFF"/>
+</svg>
