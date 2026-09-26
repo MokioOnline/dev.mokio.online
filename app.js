@@ -1,7 +1,7 @@
 const SUPABASE_URL = 'https://gmncuelonmicdbpuacqi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_u09NHV7z9E-2CJ0tvQ8IvQ_xcSXfs0F';
 const ALLOWED_ROLES = ['owner', 'tester'];
-const NEXT_PAGE = 'messeges/main.html';
+const NEXT_PAGE = 'messages/main.html';
 
 const headers = (token = SUPABASE_ANON_KEY) => ({
   'Content-Type': 'application/json',
