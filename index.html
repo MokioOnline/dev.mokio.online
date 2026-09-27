@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mokio Dev</title>
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="modal">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <img src="images/logo.svg" alt="Mokio" class="auth-logo">
+        <h2>Mokio Dev</h2>
+        <p class="auth-sub">Owner and tester access only.</p>
+      </div>
+      <form id="authForm">
+        <label>
+          Email or username
+          <input id="loginId" type="text" placeholder="email or username" autocomplete="username" required>
+        </label>
+        <label>
+          Password
+          <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        </label>
+        <button type="submit" class="btn auth-submit">Sign In</button>
+      </form>
+      <p class="auth-note" id="loginNote"></p>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
