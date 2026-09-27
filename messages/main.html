@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mokio Messages</title>
+  <link rel="icon" href="icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <button id="homeBtn" title="Home"><img class="home" src="mokio-logo.png" alt="Mokio"></button>
+      <div class="rule"></div>
+      <div id="servers"></div>
+      <button class="orb" id="newServerBtn" title="New group">+</button>
+      <div class="rail-bottom">
+        <button class="orb" id="bellBtn" title="Notifications">🔔</button>
+        <button class="orb" id="cogBtn" title="Settings">⚙</button>
+      </div>
+    </aside>
+
+    <aside class="mid">
+      <div class="mid-top" id="midTitle">Direct messages</div>
+      <div class="mid-list" id="dmList">
+        <button class="mid-item on" id="friendsBtn">Friends</button>
+        <button class="mid-item" id="notesBtn">Notifications</button>
+        <div class="h">Groups</div>
+        <div id="groupList"></div>
+        <button class="mid-item" id="newGroupBtn" type="button">+ New group</button>
+        <div class="h">Chats</div>
+        <div id="convos"></div>
+      </div>
+      <div class="mid-list" id="serverList" hidden>
+        <button class="mid-item" id="groupChatBtn" type="button"># private chat</button>
+        <button class="mid-item" id="groupCallSideBtn" type="button">Start group call</button>
+        <div class="h">Members</div>
+        <div id="groupMembers"></div>
+        <form id="inviteForm" class="invite">
+          <input name="handle" placeholder="Add @username to group">
+        </form>
+        <div class="h">Channels</div>
+        <div id="textChannels"></div>
+        <button class="mid-item" id="addTextBtn">+ text channel</button>
+        <div id="voiceChannels"></div>
+        <button class="mid-item" id="addVoiceBtn">+ voice channel</button>
+      </div>
+      <button class="mebar" id="meBtn">
+        <div class="avatar" id="meAv">M</div>
+        <div class="me-copy">
+          <div class="name" id="meName">—</div>
+          <div class="sub" id="meSub">online</div>
+        </div>
+      </button>
+    </aside>
+
+    <section class="main">
+      <header class="top">
+        <span id="title">Friends</span>
+        <button class="call-top" id="callBtn" hidden type="button">Call</button>
+        <button class="ghost" id="settingsBtn" type="button">Account</button>
+      </header>
+
+      <div id="friendsPane" class="body pane">
+        <form id="addFriend" class="inline">
+          <input class="field" name="handle" placeholder="Add friend by username or email">
+          <button class="send" type="submit">Add</button>
+        </form>
+        <div class="h">Friends</div>
+        <div id="friends"></div>
+      </div>
+
+      <div id="notesPane" class="body settings-body pane" hidden>
+        <h2 class="page-title">Notifications</h2>
+        <div class="setting-card">
+          <label class="check"><input type="checkbox" id="noteCalls" checked> Call alerts</label>
+          <label class="check"><input type="checkbox" id="noteMsgs" checked> Message alerts</label>
+          <label class="check"><input type="checkbox" id="noteSound" checked> Play sounds</label>
+          <label class="check"><input type="checkbox" id="notePush"> Device notifications</label>
+          <button class="send" id="saveNotes" type="button">Save notification settings</button>
+          <p class="sub" id="noteSaveMsg"></p>
+        </div>
+        <div class="h">Recent</div>
+        <div id="notes"></div>
+      </div>
+
+      <div id="appSettingsPane" class="body settings-body pane" hidden>
+        <h2 class="page-title">Settings</h2>
+        <div class="setting-card">
+          <p class="sub">App settings. Your profile is under Account.</p>
+          <label class="check"><input type="checkbox" id="appCompact"> Compact chat</label>
+          <label class="check"><input type="checkbox" id="appTime24"> 24-hour message times</label>
+          <button class="send" id="saveAppSettings" type="button">Save settings</button>
+          <p class="sub" id="appSaveMsg"></p>
+        </div>
+      </div>
+
+      <div id="settingsPane" class="body settings-body pane" hidden>
+        <h2 class="page-title">Account</h2>
+        <div class="preview" id="preview">
+          <div class="banner" id="banner"></div>
+          <div class="preview-row">
+            <div class="avatar lg" id="prevAv">M</div>
+            <div>
+              <div id="prevName">You</div>
+              <div class="sub" id="prevUser">@user</div>
+            </div>
+          </div>
+        </div>
+        <div class="setting-card">
+          <label>Display name<input class="field" id="displayName" maxlength="32"></label>
+          <label>Username<input class="field" id="settingsUsername" maxlength="20" placeholder="unique username"></label>
+          <label>Bio<textarea class="field area" id="bio" maxlength="160"></textarea></label>
+          <label>Pronouns<input class="field" id="pronouns" maxlength="24"></label>
+        </div>
+        <div class="setting-card">
+          <label>Accent color<input class="field" id="color" type="color" value="#4fc3f7"></label>
+          <label>Banner color<input class="field" id="bannerColor" type="color" value="#12141c"></label>
+          <label>Status
+            <select class="field" id="status">
+              <option value="online">online</option>
+              <option value="dnd">do not disturb</option>
+              <option value="invisible">invisible</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" id="hideOnline"> Hide online status</label>
+          <button class="send" id="saveProfile" type="button">Save profile</button>
+          <p class="sub" id="saveNote"></p>
+        </div>
+      </div>
+
+      <div id="chatPane" class="chat-pane pane" hidden>
+        <div id="thread" class="thread"><p class="sub">Pick a chat to start messaging.</p></div>
+        <div id="emojiBar" class="emoji" hidden></div>
+        <form id="composer" class="composer">
+          <button type="button" id="emojiBtn" class="ghost" title="Emoji">☺</button>
+          <input name="body" placeholder="Message" autocomplete="off">
+          <button class="send" type="submit">Send</button>
+        </form>
+      </div>
+
+      <div id="voicePane" class="call-stage pane" hidden>
+        <div class="call-hero">
+          <div class="call-kicker" id="voiceKicker">Call</div>
+          <div class="call-status" id="voiceTitle">Voice</div>
+          <div class="call-with" id="callWith"></div>
+          <div class="call-meta" id="voiceMeta"></div>
+        </div>
+        <div id="voicePeople" class="voice-people"></div>
+        <div id="videos" class="tiles tiles-grid">
+          <div class="tile local-tile" id="localTile">
+            <div class="face" id="localFace">You</div>
+            <video id="localVid" autoplay muted playsinline></video>
+            <span class="tile-name">You</span>
+          </div>
+        </div>
+        <div class="call-bar">
+          <button class="ctl icon-btn" id="muteBtn" type="button" title="Mute"></button>
+          <button class="ctl icon-btn" id="camBtn" type="button" title="Camera"></button>
+          <div class="more-wrap">
+            <button class="ctl" id="moreBtn" type="button" title="More">⋯</button>
+            <div id="moreMenu" class="more-menu" hidden>
+              <div class="vol-wrap">
+                <span>Speaker</span>
+                <input id="volSlider" type="range" min="0" max="300" value="160">
+                <span id="volLabel">160</span>
+              </div>
+            </div>
+          </div>
+          <button class="ctl end" id="leaveVoiceBtn" type="button">End</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="incoming" class="incoming-overlay" hidden>
+    <div class="incoming-card">
+      <div class="avatar lg" id="incomingAv">☎</div>
+      <h2 id="incomingText">Incoming call</h2>
+      <p class="sub" id="incomingSub">Mokio call</p>
+      <div class="incoming-actions">
+        <button class="end-btn" id="declineCall" type="button">Decline</button>
+        <button class="accept-btn" id="acceptCall" type="button">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
