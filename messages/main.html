@@ -129,13 +129,14 @@
 
       <div id="chatPane" class="chat-pane pane" hidden>
         <div id="groupBar" class="group-bar" hidden>
+          <button class="edit-btn" id="editGroupBtn" type="button" title="Edit group">✎</button>
           <div class="group-icon" id="groupIcon"></div>
           <div class="group-bar-copy">
             <div class="group-bar-people" id="groupBarPeople"></div>
             <div class="group-bar-count" id="groupBarCount"></div>
           </div>
-          <button class="edit-btn" id="editGroupBtn" type="button" title="Edit group">✎</button>
           <button class="plus-btn" id="addMemberBtn" type="button" title="Add friends">+</button>
+          <button class="gear-btn" id="groupSettingsBtn" type="button" title="Group settings">⚙</button>
         </div>
         <div id="thread" class="thread"><p class="sub">Pick a chat to start messaging.</p></div>
         <div id="emojiBar" class="emoji" hidden></div>
@@ -234,8 +235,37 @@
       <label>Group name
         <input class="field" id="groupNameInput" maxlength="40" placeholder="Group name">
       </label>
+      <label>Accent color<input class="field" id="groupColorInput" type="color" value="#7d8cff"></label>
+      <label>Topic / description<input class="field" id="groupTopicInput" maxlength="80" placeholder="What’s this group for?"></label>
       <p class="sub" id="editGroupNote"></p>
       <button class="send" id="saveGroupBtn" type="button">Save</button>
+    </div>
+  </div>
+
+  <div id="groupSettingsModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-top">
+        <div>
+          <div class="modal-title">Group settings</div>
+          <div class="sub" id="groupSettingsSub">Manage this group</div>
+        </div>
+        <button class="ghost" id="closeGroupSettings" type="button">✕</button>
+      </div>
+      <div class="setting-card tight">
+        <label class="check"><input type="checkbox" id="groupMute"> Mute this group</label>
+        <label class="check"><input type="checkbox" id="groupPin"> Pin group to top</label>
+        <label>Your nickname in this group
+          <input class="field" id="groupNickInput" maxlength="24" placeholder="Optional nickname">
+        </label>
+        <button class="ghost" id="saveGroupPrefs" type="button">Save preferences</button>
+      </div>
+      <div class="h">Members</div>
+      <div id="groupMemberManage" class="friend-pick-list"></div>
+      <div class="group-danger">
+        <button class="ghost" id="leaveGroupBtn" type="button">Leave group</button>
+        <button class="ghost danger" id="deleteGroupBtn" type="button">Delete group</button>
+      </div>
+      <p class="sub" id="groupSettingsNote"></p>
     </div>
   </div>
 

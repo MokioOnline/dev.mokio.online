@@ -437,6 +437,7 @@ async function createGroup(name) {
   if (created) {
     await ensureGroupChannels(created);
     rememberRoster(created.id, me.id, me.displayName || me.username || 'You');
+    writeGroupMeta(created.id, { name: created.name || name, ownerId: me.id });
   }
   return created;
 }
@@ -462,10 +463,18 @@ function writeGroupMeta(sid, meta) {
   if (sv) {
     if (next.name) sv.name = next.name;
     if (next.photo) sv.photo = next.photo;
+    if (next.color) sv.color = next.color;
+    if (next.topic) sv.topic = next.topic;
+    if (next.ownerId) sv.ownerId = next.ownerId;
+    if (next.deleted) sv.deleted = true;
   }
   if (activeServer && activeServer.id === sid) {
     if (next.name) activeServer.name = next.name;
     if (next.photo) activeServer.photo = next.photo;
+    if (next.color) activeServer.color = next.color;
+    if (next.topic) activeServer.topic = next.topic;
+    if (next.ownerId) activeServer.ownerId = next.ownerId;
+    if (next.deleted) activeServer.deleted = true;
   }
   return next;
 }
@@ -474,7 +483,20 @@ function applyGroupMeta(sv) {
   const meta = readGroupMeta(sv.id);
   if (meta.name) sv.name = meta.name;
   if (meta.photo) sv.photo = meta.photo;
+  if (meta.color) sv.color = meta.color;
+  if (meta.topic) sv.topic = meta.topic;
+  if (meta.ownerId) sv.ownerId = meta.ownerId;
+  if (meta.deleted) sv.deleted = true;
   return sv;
+}
+function groupPrefsKey(sid) { return 'mokio_group_prefs_' + sid; }
+function readGroupPrefs(sid) {
+  try { return JSON.parse(localStorage.getItem(groupPrefsKey(sid)) || '{}'); } catch (_) { return {}; }
+}
+function writeGroupPrefs(sid, patch) {
+  const next = Object.assign(readGroupPrefs(sid), patch || {});
+  localStorage.setItem(groupPrefsKey(sid), JSON.stringify(next));
+  return next;
 }
 function isGroupMeta(body) {
   return String(body || '').startsWith(GROUP_META_PREFIX);
@@ -503,8 +525,16 @@ async function pullGroupMeta(sv, textCh) {
     if (!latest || at >= latest.at) latest = Object.assign({ at }, parsed);
   });
   if (latest) {
-    writeGroupMeta(sv.id, { name: latest.name, photo: latest.photo });
+    writeGroupMeta(sv.id, { name: latest.name, photo: latest.photo, color: latest.color, topic: latest.topic, ownerId: latest.ownerId, deleted: latest.deleted });
     applyGroupMeta(sv);
+    if (latest.deleted) {
+      cachedServers = cachedServers.filter((s) => s.id !== sv.id);
+      if (activeServer && activeServer.id === sv.id) {
+        activeServer = null;
+        showPane('friendsPane', 'Friends');
+      }
+      loadServers();
+    }
   }
 }
 function readRoster(sid) {
@@ -565,7 +595,8 @@ async function loadServers() {
   const res = await request(SUPABASE_URL + '/rest/v1/rpc/my_servers', {
     method: 'POST', headers: headers(session.access_token), body: '{}'
   });
-  cachedServers = (Array.isArray(res.data) ? res.data : []).map(applyGroupMeta);
+  cachedServers = (Array.isArray(res.data) ? res.data : []).map(applyGroupMeta).filter((sv) => !sv.deleted && !readGroupMeta(sv.id).deleted);
+  cachedServers.sort((a, b) => Number(!!readGroupPrefs(b.id).pinned) - Number(!!readGroupPrefs(a.id).pinned));
   const box = $('servers');
   if (box) box.innerHTML = '';
   const glist = $('groupList');
@@ -575,10 +606,12 @@ async function loadServers() {
       const row = document.createElement('button');
       row.className = 'mid-item group';
       row.dataset.gid = sv.id;
+      const prefs = readGroupPrefs(sv.id);
       const orb = sv.photo
         ? '<span class="group-orb"><img alt="" src="' + sv.photo + '"></span>'
         : '<span class="group-orb">' + String(sv.name || 'G').slice(0, 1).toUpperCase() + '</span>';
-      row.innerHTML = orb + '<span>' + String(sv.name || 'Group').replace(/</g, '&lt;') + '</span>';
+      row.innerHTML = orb + '<span>' + String(sv.name || 'Group').replace(/</g, '&lt;') + '</span>' + (prefs.pinned ? '<span class="pin-mark">Pinned</span>' : '');
+      if (sv.color) row.querySelector('.group-orb').style.boxShadow = '0 0 0 2px ' + sv.color;
       row.onclick = () => openGroup(sv);
       glist.appendChild(row);
     }
@@ -659,9 +692,15 @@ async function paintGroupMembers(sv, textCh) {
   }
   const labels = members.map((m) => m.name);
   applyGroupMeta(sv);
+  const prefs = readGroupPrefs(sv.id);
   if ($('groupBarPeople')) $('groupBarPeople').textContent = sv.name || 'Group';
-  if ($('groupBarCount')) $('groupBarCount').textContent = members.length + (members.length === 1 ? ' member' : ' members') + (labels.length ? ' · ' + labels.join(', ') : '');
+  const bits = [members.length + (members.length === 1 ? ' member' : ' members')];
+  if (sv.topic) bits.push(sv.topic);
+  else if (labels.length) bits.push(labels.join(', '));
+  if (prefs.muted) bits.push('Muted');
+  if ($('groupBarCount')) $('groupBarCount').textContent = bits.join(' · ');
   paintGroupIcon($('groupIcon'), sv);
+  if ($('groupBar')) $('groupBar').style.boxShadow = sv.color ? ('inset 3px 0 0 ' + sv.color) : '';
   if ($('title') && activeServer && activeServer.id === sv.id) $('title').textContent = sv.name || 'Group';
 }
 
@@ -784,6 +823,8 @@ function openEditGroupModal() {
   applyGroupMeta(activeServer);
   pendingGroupPhoto = activeServer.photo || readGroupMeta(activeServer.id).photo || null;
   if ($('groupNameInput')) $('groupNameInput').value = activeServer.name || '';
+  if ($('groupColorInput')) $('groupColorInput').value = activeServer.color || readGroupMeta(activeServer.id).color || '#7d8cff';
+  if ($('groupTopicInput')) $('groupTopicInput').value = activeServer.topic || readGroupMeta(activeServer.id).topic || '';
   if ($('editGroupNote')) $('editGroupNote').textContent = '';
   setGroupPhotoPreview(pendingGroupPhoto, activeServer.name);
   if ($('editGroupModal')) $('editGroupModal').hidden = false;
@@ -807,6 +848,10 @@ async function publishGroupMeta(sv, meta) {
     const body = GROUP_META_PREFIX + JSON.stringify({
       name: meta.name || sv.name,
       photo: meta.photo || '',
+      color: meta.color || sv.color || '',
+      topic: meta.topic || sv.topic || '',
+      ownerId: meta.ownerId || sv.ownerId || readGroupMeta(sv.id).ownerId || '',
+      deleted: !!meta.deleted,
       from: me.id,
       at: Date.now()
     });
@@ -835,7 +880,13 @@ if ($('saveGroupBtn')) $('saveGroupBtn').onclick = async () => {
   const name = (($('groupNameInput') && $('groupNameInput').value) || '').trim().slice(0, 40);
   if (!name) { if ($('editGroupNote')) $('editGroupNote').textContent = 'Enter a group name.'; return; }
   if ($('editGroupNote')) $('editGroupNote').textContent = 'Saving...';
-  const meta = { name, photo: pendingGroupPhoto || readGroupMeta(activeServer.id).photo || '' };
+  const meta = {
+    name,
+    photo: pendingGroupPhoto || readGroupMeta(activeServer.id).photo || '',
+    color: ($('groupColorInput') && $('groupColorInput').value) || '',
+    topic: (($('groupTopicInput') && $('groupTopicInput').value) || '').trim().slice(0, 80),
+    ownerId: activeServer.ownerId || readGroupMeta(activeServer.id).ownerId || me.id
+  };
   await publishGroupMeta(activeServer, meta);
   applyGroupMeta(activeServer);
   await loadServers();
@@ -844,6 +895,123 @@ if ($('saveGroupBtn')) $('saveGroupBtn').onclick = async () => {
   if ($('editGroupNote')) $('editGroupNote').textContent = 'Saved.';
   closeEditGroupModal();
 };
+
+async function tryGroupRpc(names, body) {
+  for (const name of names) {
+    const res = await request(SUPABASE_URL + '/rest/v1/rpc/' + name, {
+      method: 'POST', headers: headers(session.access_token), body: JSON.stringify(body)
+    }).catch(() => ({ ok: false }));
+    if (res && res.ok) return res;
+  }
+  return { ok: false };
+}
+
+async function renderGroupMemberManage() {
+  const box = $('groupMemberManage');
+  if (!box || !activeServer) return;
+  box.innerHTML = '';
+  const names = readRoster(activeServer.id);
+  names[me.id] = names[me.id] || 'You';
+  const ownerId = activeServer.ownerId || readGroupMeta(activeServer.id).ownerId;
+  for (const uid of Object.keys(names)) {
+    const label = uid === me.id ? 'You' : await nameFor(uid);
+    const row = document.createElement('div');
+    row.className = 'pick-row';
+    const role = uid === ownerId ? 'Owner' : (uid === me.id ? 'You' : 'Member');
+    row.innerHTML = '<div class="avatar">' + initial(label) + '</div><div class="copy"><div class="name">' + String(label).replace(/</g, '&lt;') + '</div><div class="sub">' + role + '</div></div>';
+    if (uid !== me.id) {
+      const kickBtn = document.createElement('button');
+      kickBtn.type = 'button';
+      kickBtn.className = 'kick-btn';
+      kickBtn.textContent = 'Kick';
+      kickBtn.onclick = () => kickGroupMember(uid, label);
+      row.appendChild(kickBtn);
+    }
+    box.appendChild(row);
+  }
+}
+
+async function openGroupSettings() {
+  if (!activeServer) return;
+  const prefs = readGroupPrefs(activeServer.id);
+  if ($('groupSettingsSub')) $('groupSettingsSub').textContent = activeServer.name || 'Group';
+  if ($('groupMute')) $('groupMute').checked = !!prefs.muted;
+  if ($('groupPin')) $('groupPin').checked = !!prefs.pinned;
+  if ($('groupNickInput')) $('groupNickInput').value = prefs.nickname || '';
+  if ($('groupSettingsNote')) $('groupSettingsNote').textContent = '';
+  if ($('groupSettingsModal')) $('groupSettingsModal').hidden = false;
+  await renderGroupMemberManage();
+}
+function closeGroupSettings() {
+  if ($('groupSettingsModal')) $('groupSettingsModal').hidden = true;
+}
+
+async function kickGroupMember(uid, label) {
+  if (!activeServer || !uid) return;
+  if (!confirm('Kick ' + (label || 'this member') + ' from the group?')) return;
+  await tryGroupRpc(['kick_member', 'remove_member', 'leave_server'], { sid: activeServer.id, uid });
+  await request(SUPABASE_URL + '/rest/v1/server_members?server_id=eq.' + activeServer.id + '&user_id=eq.' + uid, {
+    method: 'DELETE', headers: headers(session.access_token)
+  }).catch(() => {});
+  const map = readRoster(activeServer.id);
+  delete map[uid];
+  localStorage.setItem(rosterKey(activeServer.id), JSON.stringify(map));
+  await paintGroupMembers(activeServer, currentChannel && currentChannel.kind !== 'voice' ? currentChannel : null);
+  await renderGroupMemberManage();
+  if ($('groupSettingsNote')) $('groupSettingsNote').textContent = (label || 'Member') + ' was removed.';
+}
+
+async function leaveCurrentGroup() {
+  if (!activeServer) return;
+  if (!confirm('Leave this group?')) return;
+  const sv = activeServer;
+  await tryGroupRpc(['leave_server', 'remove_member'], { sid: sv.id, uid: me.id });
+  await request(SUPABASE_URL + '/rest/v1/server_members?server_id=eq.' + sv.id + '&user_id=eq.' + me.id, {
+    method: 'DELETE', headers: headers(session.access_token)
+  }).catch(() => {});
+  const map = readRoster(sv.id);
+  delete map[me.id];
+  localStorage.setItem(rosterKey(sv.id), JSON.stringify(map));
+  closeGroupSettings();
+  activeServer = null;
+  currentChannel = null;
+  await loadServers();
+  showPane('friendsPane', 'Friends');
+}
+
+async function deleteCurrentGroup() {
+  if (!activeServer) return;
+  if (!confirm('Delete "' + (activeServer.name || 'this group') + '" for everyone?')) return;
+  const sv = activeServer;
+  await publishGroupMeta(sv, Object.assign(readGroupMeta(sv.id), { deleted: true, name: sv.name }));
+  await tryGroupRpc(['delete_server', 'remove_server'], { sid: sv.id });
+  await request(SUPABASE_URL + '/rest/v1/servers?id=eq.' + sv.id, {
+    method: 'DELETE', headers: headers(session.access_token)
+  }).catch(() => {});
+  writeGroupMeta(sv.id, { deleted: true });
+  closeGroupSettings();
+  activeServer = null;
+  currentChannel = null;
+  await loadServers();
+  showPane('friendsPane', 'Friends');
+}
+
+if ($('groupSettingsBtn')) $('groupSettingsBtn').onclick = (e) => { e.stopPropagation(); openGroupSettings(); };
+if ($('closeGroupSettings')) $('closeGroupSettings').onclick = closeGroupSettings;
+if ($('groupSettingsModal')) $('groupSettingsModal').onclick = (e) => { if (e.target.id === 'groupSettingsModal') closeGroupSettings(); };
+if ($('saveGroupPrefs')) $('saveGroupPrefs').onclick = async () => {
+  if (!activeServer) return;
+  writeGroupPrefs(activeServer.id, {
+    muted: !!( $('groupMute') && $('groupMute').checked ),
+    pinned: !!( $('groupPin') && $('groupPin').checked ),
+    nickname: (($('groupNickInput') && $('groupNickInput').value) || '').trim()
+  });
+  if ($('groupSettingsNote')) $('groupSettingsNote').textContent = 'Preferences saved.';
+  await loadServers();
+  await paintGroupMembers(activeServer, currentChannel && currentChannel.kind !== 'voice' ? currentChannel : null);
+};
+if ($('leaveGroupBtn')) $('leaveGroupBtn').onclick = leaveCurrentGroup;
+if ($('deleteGroupBtn')) $('deleteGroupBtn').onclick = deleteCurrentGroup;
 
 async function openChannel(ch) {
   current = null;
@@ -1380,7 +1548,7 @@ async function refreshMessages() {
       });
       if (latest) {
         const before = (activeServer.name || '') + '|' + (activeServer.photo || '');
-        writeGroupMeta(activeServer.id, { name: latest.name, photo: latest.photo });
+        writeGroupMeta(activeServer.id, { name: latest.name, photo: latest.photo, color: latest.color, topic: latest.topic, ownerId: latest.ownerId, deleted: latest.deleted });
         applyGroupMeta(activeServer);
         title = activeServer.name || title;
         const after = (activeServer.name || '') + '|' + (activeServer.photo || '');
