@@ -158,8 +158,8 @@ async function boot() {
     displayName: extraRow?.display_name || row?.username || '',
     bio: extraRow?.bio || '',
     pronouns: extraRow?.pronouns || '',
-    color: extraRow?.color || '#4fc3f7',
-    bannerColor: extraRow?.banner_color || '#12141c',
+    color: extraRow?.color || '#4f8bff',
+    bannerColor: extraRow?.banner_color || '#0e1022',
     status: extraRow?.status || 'online',
     hideOnline: !!extraRow?.hide_online
   };
@@ -613,8 +613,8 @@ function paintMe() {
   $('displayName').value = me.displayName || '';
   $('bio').value = me.bio || '';
   $('pronouns').value = me.pronouns || '';
-  $('color').value = me.color || '#4fc3f7';
-  $('bannerColor').value = me.bannerColor || '#12141c';
+  $('color').value = me.color || '#4f8bff';
+  $('bannerColor').value = me.bannerColor || '#0e1022';
   $('status').value = me.status || 'online';
   $('hideOnline').checked = !!me.hideOnline;
   $('prevName').textContent = label;
@@ -1086,7 +1086,7 @@ function openEditGroupModal() {
   applyGroupMeta(activeServer);
   pendingGroupPhoto = activeServer.photo || readGroupMeta(activeServer.id).photo || null;
   if ($('groupNameInput')) $('groupNameInput').value = activeServer.name || '';
-  if ($('groupColorInput')) $('groupColorInput').value = activeServer.color || readGroupMeta(activeServer.id).color || '#7d8cff';
+  if ($('groupColorInput')) $('groupColorInput').value = activeServer.color || readGroupMeta(activeServer.id).color || '#a35cff';
   if ($('groupTopicInput')) $('groupTopicInput').value = activeServer.topic || readGroupMeta(activeServer.id).topic || '';
   if ($('editGroupNote')) $('editGroupNote').textContent = '';
   setGroupPhotoPreview(pendingGroupPhoto, activeServer.name);
